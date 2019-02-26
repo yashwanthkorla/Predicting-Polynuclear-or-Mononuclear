@@ -1,0 +1,124 @@
+<!--For website use. Use Media queries to make it responsive-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+
+    <title>P or M</title>
+    <style>
+      #container {
+        display: flex;
+        text-align: center;
+        border: 0.8px solid #bababa;
+        border-radius: 10px;
+        padding: 0px;
+        margin: 10px;
+      }
+      #left,
+      #right {
+        width: 45%;
+      }
+      h1 {
+        background: #386a65;
+        padding: 30px;
+        margin: 0 10px;
+        color: white;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="text-align: center">Predicting Polynuclear or Mononuclear</h1>
+    <div id="container">
+      <div id="left">
+        <p><input type="file" onchange="previewFile()" /></p>
+        <img src="{{url_for('static', filename='no-image.png')}}" height="200"  alt="Image preview..." />
+        <p id="predicted_value"></p>
+      </div>
+      <div id="right">
+        <canvas
+          id="bar-chart"
+          width="800"
+          height="450"
+          style="display:none"
+        ></canvas>
+      </div>
+    </div>
+    <script>
+      function previewFile() {
+        var preview = document.querySelector("img"); //selects the query named img
+        var file = document.querySelector("input[type=file]").files[0]; //sames as here
+        var reader = new FileReader();
+
+        reader.onloadend = function() {
+          preview.src = reader.result;
+          data_point = { file: "image", data: reader.result };
+          fetch("/predictPM", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data_point)
+          })
+            .then(response => {
+              return response.json();
+            })
+            .then(data => {
+              document.getElementById("predicted_value").innerText = `Type : ${
+                data["cell_category"]
+              }
+              SubType : ${data["type"]}`;
+
+              document.querySelector("canvas").style.display = "block";
+
+              // Bar chart
+              new Chart(document.getElementById("bar-chart"), {
+                type: "bar",
+                data: {
+                  labels: [
+                    "EOSINOPHIL",
+                    "LYMPHOCYTE",
+                    "MONOCYTE",
+                    "NEUTROPHIL"
+                  ],
+                  datasets: [
+                    {
+                      label: "Population (millions)",
+                      backgroundColor: [
+                        "#3e95cd",
+                        "#8e5ea2",
+                        "#3cba9f",
+                        "#e8c3b9"
+                      ],
+                      data: data["prediction_values"]
+                    }
+                  ]
+                },
+                options: {
+                  legend: { display: false },
+                  title: {
+                    display: true,
+                    text: "Predicted White Blood Cell Classification"
+                  }
+                }
+              });
+            })
+            .catch(err => {
+              console.log(err);
+            });
+        };
+
+        if (file) {
+          reader.readAsDataURL(file); //reads the data as a URL
+        } else {
+          preview.src = "";
+        }
+      }
+
+    </script>
+  </body>
+</html>
