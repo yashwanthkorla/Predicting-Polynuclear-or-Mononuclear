@@ -23,4 +23,19 @@ Note that Eosinophils and Neutrophils are polynuclear while Lymphocytes and Mono
 
 The dataSample.zip in this folder consists of normal image. The image used as training in the model are augmented once ( Horizontal rotation,vertical rotation,Centered Crop, resize ....)
 
+### To Run:
+
+#### Pre-equisites:
+
+- Flask
+- numpy
+- torch
+- python(Latest)
+
+1. Open terminal and type the below command. The Flask app will be served on http://127.0.0.1:5000/
+
+```
+python run.py
+```
+
 
